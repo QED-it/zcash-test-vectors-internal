@@ -15,8 +15,14 @@ from sapling_utils import cldiv, i2leosp
 def I_D_i(D, i):
     return find_group_hash(D, i2leosp(32, i - 1))
 
+def assert_binary(i):
+    assert i * (1 - i) == 0, "Expected 0 or 1, found %i" % i
+
 def encode_chunk(mj):
     (s0, s1, s2) = mj
+    assert_binary(s0)
+    assert_binary(s1)
+    assert_binary(s2)
     return (1 - 2*s2) * (1 + s0 + 2*s1)
 
 def encode_segment(Mi):
@@ -52,3 +58,21 @@ def windowed_pedersen_commitment(r, s):
 
 def homomorphic_pedersen_commitment(rcv, D, v):
     return find_group_hash(D, b'v') * v + find_group_hash(D, b'r') * rcv
+
+def test_bits():
+    personalization_note_commitment = [1, 1, 1, 1, 1, 1]
+    chars = b"Salut monde!";
+    num_bits = len(chars) * 8;
+    bits = [
+        ((chars[i // 8] >> (7 - (i % 8))) & 1)
+        for i in range(num_bits)
+    ]
+    return personalization_note_commitment + bits
+
+if __name__ == "__main__":
+    bits = test_bits()
+    print("bits", bits)
+    ph = pedersen_hash_to_point(b'Zcash_PH', bits)
+    # Coordinates on Fr of BLS12
+    print("x = Fr(%s)" % hex(ph.u.s))
+    print("y = Fr(%s)" % hex(ph.v.s))
