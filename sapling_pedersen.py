@@ -60,19 +60,74 @@ def homomorphic_pedersen_commitment(rcv, D, v):
     return find_group_hash(D, b'v') * v + find_group_hash(D, b'r') * rcv
 
 def test_bits():
-    personalization_note_commitment = [1, 1, 1, 1, 1, 1]
     chars = b"Salut monde!";
     num_bits = len(chars) * 8;
     bits = [
         ((chars[i // 8] >> (7 - (i % 8))) & 1)
         for i in range(num_bits)
     ]
-    return personalization_note_commitment + bits
+    return bits
 
-if __name__ == "__main__":
-    bits = test_bits()
-    print("bits", bits)
-    ph = pedersen_hash_to_point(b'Zcash_PH', bits)
-    # Coordinates on Fr of BLS12
-    print("x = Fr(%s)" % hex(ph.u.s))
-    print("y = Fr(%s)" % hex(ph.v.s))
+
+template = '''
+        // Test vectors from https://github.com/zcash-hackworks/zcash-test-vectors/blob/master/sapling_pedersen.py
+        struct TestVector<'a> {
+            personalization: Personalization,
+            input_bits: Vec<u8>,
+            hash_x: &'a str,
+            hash_y: &'a str,
+        }
+
+        let test_vectors = vec![
+        {% for v in vectors %}
+            TestVector {
+                personalization: Personalization::{{ v.personalization }},
+                input_bits: vec!{{ v.input_bits }},
+                hash_x: "Fr({{ v.hash_x }})",
+                hash_y: "Fr({{ v.hash_y }})",
+            },
+        {% endfor %}
+        ];
+        // End test vectors
+'''
+
+def int_to_hex(i):
+    return "0x{:064x}".format(i)
+
+
+def main():
+    from jinja2 import Template
+
+    vectors = []
+
+    for (pers_name, pers_bits) in [
+        ("NoteCommitment", [1, 1, 1, 1, 1, 1]),
+        ("MerkleTree(34)", [0, 1, 0, 0, 0, 1]), # 34 in left-to-right binary
+    ]:
+        for bits in [
+            [],
+            [0],
+            [1],
+            [0, 0],
+            [0, 1],
+            [1, 0],
+            [1, 1],
+            [0] * 14,
+            [1] * 14,
+            test_bits(),
+        ]:
+            all_bits = pers_bits + bits
+            ph = pedersen_hash_to_point(b'Zcash_PH', all_bits)
+            vectors.append({
+                "personalization": pers_name,
+                "input_bits": all_bits,
+                "hash_x": int_to_hex(ph.u.s),
+                "hash_y": int_to_hex(ph.v.s),
+            })
+
+    rust = Template(template).render(vectors=vectors)
+    print(rust)
+
+
+if __name__ == '__main__':
+    main()
