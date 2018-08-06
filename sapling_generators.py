@@ -9,6 +9,7 @@ from sapling_utils import i2leosp
 # This is chosen to be some random string that we couldn't have
 # anticipated when we designed the algorithm, for rigidity purposes.
 # We deliberately use an ASCII hex string of 32 bytes here.
+# See https://github.com/ZcashFoundation/powersoftau-attestations/tree/master/0088
 URS = b'096b36a5804bfacef1691e173c366a47ff5ba84a44f26ddd7e8d9f79d5b42df0'
 
 
