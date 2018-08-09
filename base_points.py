@@ -59,6 +59,13 @@ G_minus_minus = Point(Fr(-413942555061046152566594107681266213236335922423262490
 assert G_minus_minus * Fr(r_j) == A0
 
 
+# Some structure in Pedersen hashes: P and Pm differ only by the sign of u
+P0 = G * Fs(r_j//2)
+P1 = G * Fs(r_j//2 + 1)
+assert Fr(P0.u.s) == Fr(-P1.u.s)
+assert P0.v == P1.v
+
+
 if __name__ == "__main__":
     print("ZERO", ZERO)
     print()
