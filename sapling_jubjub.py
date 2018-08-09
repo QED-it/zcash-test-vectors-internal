@@ -58,23 +58,23 @@ class FieldElement(object):
 
 
 
-class Fq(FieldElement):
+class Fr(FieldElement):
     @staticmethod
     def from_bytes(buf):
-        return Fq(leos2ip(buf), strict=True)
+        return Fr(leos2ip(buf), strict=True)
 
     def __init__(self, s, strict=False):
-        FieldElement.__init__(self, Fq, s, q_j, strict=strict)
+        FieldElement.__init__(self, Fr, s, q_j, strict=strict)
 
     def __str__(self):
-        return 'Fq(%s)' % self.s
+        return 'Fr(%s)' % self.s
 
     def sqrt(self):
         # Tonelli-Shank's algorithm for q mod 16 = 1
         # https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
         a = self.exp(qm1d2)
         if a == self.ONE:
-            c = Fq(10238227357739495823651030575849232062558860180284477541189508159991286009131)
+            c = Fr(10238227357739495823651030575849232062558860180284477541189508159991286009131)
             r = self.exp(6104339283789297388802252303364915521546564123189034618274734669824)
             t = self.exp(12208678567578594777604504606729831043093128246378069236549469339647)
             m = 32
@@ -108,26 +108,26 @@ class Fq(FieldElement):
         return self.ZERO
 
 
-class Fr(FieldElement):
+class Fs(FieldElement):
     def __init__(self, s, strict=False):
-        FieldElement.__init__(self, Fr, s, r_j, strict=strict)
+        FieldElement.__init__(self, Fs, s, r_j, strict=strict)
 
     def __str__(self):
-        return 'Fr(%s)' % self.s
+        return 'Fs(%s)' % self.s
 
-Fq.ZERO = Fq(0)
-Fq.ONE = Fq(1)
-Fq.MINUS_ONE = Fq(-1)
+Fr.ZERO = Fr(0)
+Fr.ONE = Fr(1)
+Fr.MINUS_ONE = Fr(-1)
 
-assert Fq.ZERO + Fq.ZERO == Fq.ZERO
-assert Fq.ZERO + Fq.ONE == Fq.ONE
-assert Fq.ONE + Fq.ZERO == Fq.ONE
-assert Fq.ZERO - Fq.ONE == Fq.MINUS_ONE
-assert Fq.ZERO * Fq.ONE == Fq.ZERO
-assert Fq.ONE * Fq.ZERO == Fq.ZERO
+assert Fr.ZERO + Fr.ZERO == Fr.ZERO
+assert Fr.ZERO + Fr.ONE == Fr.ONE
+assert Fr.ONE + Fr.ZERO == Fr.ONE
+assert Fr.ZERO - Fr.ONE == Fr.MINUS_ONE
+assert Fr.ZERO * Fr.ONE == Fr.ZERO
+assert Fr.ONE * Fr.ZERO == Fr.ZERO
 
-_A = Fq(-13443226831829260228624682877674385705155231329884953466695813022153219761455)
-_A_SQUARED = Fq(1615918303262283860389448007513155112015187847020867660361132469416696757234)
+_A = Fr(-13443226831829260228624682877674385705155231329884953466695813022153219761455)
+_A_SQUARED = Fr(1615918303262283860389448007513155112015187847020867660361132469416696757234)
 assert _A * _A == _A_SQUARED
 assert _A.exp(2) == _A_SQUARED
 assert _A_SQUARED.sqrt() == _A
@@ -137,9 +137,9 @@ assert _A_SQUARED.sqrt() == _A
 # Point arithmetic
 #
 
-JUBJUB_A = Fq.MINUS_ONE
-JUBJUB_D = Fq(-10240) / Fq(10241)
-JUBJUB_COFACTOR = Fr(8)
+JUBJUB_A = Fr.MINUS_ONE
+JUBJUB_D = Fr(-10240) / Fr(10241)
+JUBJUB_COFACTOR = Fs(8)
 
 class Point(object):
     @staticmethod
@@ -148,19 +148,19 @@ class Point(object):
         u_sign = buf[31] >> 7
         buf = buf[:31] + bytes([buf[31] & 0b01111111])
         try:
-            v = Fq.from_bytes(buf)
+            v = Fr.from_bytes(buf)
         except ValueError:
             return None
 
         vv = v * v
-        u2 = (vv - Fq.ONE) / (vv * JUBJUB_D - JUBJUB_A)
+        u2 = (vv - Fr.ONE) / (vv * JUBJUB_D - JUBJUB_A)
 
         u = u2.sqrt()
         if not u:
             return None
 
         if u.s % 2 != u_sign:
-            u = Fq.ZERO - u
+            u = Fr.ZERO - u
 
         return Point(u, v)
 
@@ -171,8 +171,8 @@ class Point(object):
     def __add__(self, a):
         (u1, v1) = (self.u, self.v)
         (u2, v2) = (a.u, a.v)
-        u3 = (u1*v2 + v1*u2) / (Fq.ONE + JUBJUB_D*u1*u2*v1*v2)
-        v3 = (v1*v2 - JUBJUB_A*u1*u2) / (Fq.ONE - JUBJUB_D*u1*u2*v1*v2)
+        u3 = (u1*v2 + v1*u2) / (Fr.ONE + JUBJUB_D*u1*u2*v1*v2)
+        v3 = (v1*v2 - JUBJUB_A*u1*u2) / (Fr.ONE - JUBJUB_D*u1*u2*v1*v2)
         return Point(u3, v3)
 
     def double(self):
@@ -200,6 +200,6 @@ class Point(object):
         return 'Point(%s, %s)' % (self.u, self.v)
 
 
-Point.ZERO = Point(Fq.ZERO, Fq.ONE)
+Point.ZERO = Point(Fr.ZERO, Fr.ONE)
 
 assert Point.ZERO + Point.ZERO == Point.ZERO

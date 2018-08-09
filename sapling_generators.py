@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pyblake2 import blake2s
 
-from sapling_jubjub import Point, JUBJUB_COFACTOR, Fq, r_j
+from sapling_jubjub import Point, JUBJUB_COFACTOR, Fr, r_j
 from tv_output import render_args, render_tv
 from sapling_utils import i2leosp
 
@@ -27,7 +27,7 @@ def group_hash(D, M):
     q = p * JUBJUB_COFACTOR
     if q == Point.ZERO:
         return None
-    assert q * Fq(r_j) == Point.ZERO, "Not in the largest subgroup."
+    assert q * Fr(r_j) == Point.ZERO, "Not in the largest subgroup."
     return q
 
 def find_group_hash(D, M):

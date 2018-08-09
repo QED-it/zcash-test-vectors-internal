@@ -2,7 +2,7 @@
 from pyblake2 import blake2b, blake2s
 
 from sapling_generators import PROVING_KEY_BASE, SPENDING_KEY_BASE, group_hash
-from sapling_jubjub import Fr
+from sapling_jubjub import Fs
 from sapling_merkle_tree import MERKLE_DEPTH
 from sapling_notes import note_commit, note_nullifier
 from sapling_utils import leos2bsp, leos2ip
@@ -13,7 +13,7 @@ from tv_output import render_args, render_tv
 #
 
 def to_scalar(buf):
-    return Fr(leos2ip(buf))
+    return Fs(leos2ip(buf))
 
 
 #
@@ -73,7 +73,7 @@ class SpendingKey(object):
 
     @cached
     def ivk(self):
-        return Fr(crh_ivk(bytes(self.ak()), bytes(self.nk())))
+        return Fs(crh_ivk(bytes(self.ak()), bytes(self.nk())))
 
     @cached
     def default_d(self):
@@ -97,14 +97,14 @@ def main():
     for i in range(0, 10):
         sk = SpendingKey(bytes([i] * 32))
         note_v = (2548793025584392057432895043257984320*i) % 2**64
-        note_r = Fr(8890123457840276890326754358439057438290574382905).exp(i+1)
+        note_r = Fs(8890123457840276890326754358439057438290574382905).exp(i+1)
         note_cm = note_commit(
             note_r,
             leos2bsp(bytes(group_hash(b'Zcash_gd', sk.default_d()))),
             leos2bsp(bytes(sk.default_pkd())),
             note_v)
         note_pos = (980705743285409327583205473820957432*i) % 2**MERKLE_DEPTH
-        note_nf = note_nullifier(sk.nk(), note_cm, Fr(note_pos))
+        note_nf = note_nullifier(sk.nk(), note_cm, Fs(note_pos))
         test_vectors.append({
             'sk': sk.data,
             'ask': bytes(sk.ask()),

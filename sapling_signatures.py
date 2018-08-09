@@ -3,7 +3,7 @@ import os
 from pyblake2 import blake2b
 
 from sapling_generators import SPENDING_KEY_BASE
-from sapling_jubjub import Fr, Point, r_j
+from sapling_jubjub import Fs, Point, r_j
 from sapling_key_components import to_scalar
 from sapling_utils import cldiv, leos2ip
 from tv_output import render_args, render_tv
@@ -15,15 +15,15 @@ def H(x):
     return digest.digest()
 
 def h_star(B):
-    return Fr(leos2ip(H(B)))
+    return Fs(leos2ip(H(B)))
 
 
 class RedJubjub(object):
     l_G = 256 # l_J
     l_H = 512
     Public = Point
-    Private = Fr
-    Random = Fr
+    Private = Fs
+    Random = Fs
 
     def __init__(self, P_g, random=os.urandom):
         self.P_g = P_g
@@ -61,7 +61,7 @@ class RedJubjub(object):
         R = Point.from_bytes(Rbar)
         S = leos2ip(Sbar)
         c = h_star(Rbar + M)
-        return R and S < r_j and self.P_g * Fr(S) == R + vk * c
+        return R and S < r_j and self.P_g * Fs(S) == R + vk * c
 
 
 def main():

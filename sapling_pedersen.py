@@ -4,7 +4,7 @@ from sapling_generators import (
     NOTE_POSITION_BASE,
     WINDOWED_PEDERSEN_RANDOMNESS_BASE,
 )
-from sapling_jubjub import Fr, Point
+from sapling_jubjub import Fs, Point
 from sapling_utils import cldiv, i2leosp
 
 
@@ -29,7 +29,7 @@ def encode_segment(Mi):
     ki = len(Mi) // 3
     Michunks = [Mi[i:i+3] for i in range(0, len(Mi), 3)]
     assert len(Michunks) == ki
-    return Fr(sum([encode_chunk(Michunks[j-1]) * 2**(4*(j-1)) for j in range(1, ki + 1)]))
+    return Fs(sum([encode_chunk(Michunks[j-1]) * 2**(4*(j-1)) for j in range(1, ki + 1)]))
 
 c = 63
 
@@ -83,8 +83,8 @@ template = '''
             TestVector {
                 personalization: Personalization::{{ v.personalization }},
                 input_bits: vec!{{ v.input_bits }},
-                hash_x: "Fr({{ v.hash_x }})",
-                hash_y: "Fr({{ v.hash_y }})",
+                hash_x: "Fs({{ v.hash_x }})",
+                hash_y: "Fs({{ v.hash_y }})",
             },
         {% endfor %}
         ];
