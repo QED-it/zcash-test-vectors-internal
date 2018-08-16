@@ -66,7 +66,7 @@ class Fr(FieldElement):
     def __init__(self, s, strict=False):
         FieldElement.__init__(self, Fr, s, q_j, strict=strict)
 
-    def __str__(self):
+    def __repr__(self):
         return 'Fr(%s)' % self.s
 
     def sqrt(self):
@@ -112,7 +112,7 @@ class Fs(FieldElement):
     def __init__(self, s, strict=False):
         FieldElement.__init__(self, Fs, s, r_j, strict=strict)
 
-    def __str__(self):
+    def __repr__(self):
         return 'Fs(%s)' % self.s
 
 Fr.ZERO = Fr(0)
@@ -164,6 +164,22 @@ class Point(object):
 
         return Point(u, v)
 
+    @staticmethod
+    def from_v(v):
+        u_sign = 0
+
+        vv = v * v
+        u2 = (vv - Fr.ONE) / (vv * JUBJUB_D - JUBJUB_A)
+
+        u = u2.sqrt()
+        if not u:
+            return None
+
+        if u.s % 2 != u_sign:
+            u = Fr.ZERO - u
+
+        return Point(u, v)
+
     def __init__(self, u, v):
         self.u = u
         self.v = v
@@ -196,7 +212,7 @@ class Point(object):
     def __eq__(self, a):
         return self.u == a.u and self.v == a.v
 
-    def __str__(self):
+    def __repr__(self):
         return 'Point(%s, %s)' % (self.u, self.v)
 
 
