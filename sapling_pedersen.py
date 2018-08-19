@@ -107,6 +107,7 @@ def main():
 
     vectors = []
 
+    # Random inputs
     for (pers_name, pers_bits) in [
         ("NoteCommitment", [1, 1, 1, 1, 1, 1]),
         ("MerkleTree(0)",  [0, 0, 0, 0, 0, 0]),
@@ -117,13 +118,13 @@ def main():
             [0],
             [1],
             [1, 0, 0], # Same hash due to 3-bits padding
-            sample_bits(3 * 62),
-            sample_bits(3 * 63),
-            sample_bits(3 * 63 + 1),
-            sample_bits(3 * 63 * 4),
-            sample_bits(3 * 63 * 4 + 1),
-            sample_bits(3 * 63 * 5),
-            sample_bits(3 * 63 * 5 + 1),
+            sample_bits(3 * 62 - 6),
+            sample_bits(3 * 63 - 6),
+            sample_bits(3 * 63 + 1 - 6),
+            sample_bits(3 * 63 * 4 - 6),
+            sample_bits(3 * 63 * 4 + 1 - 6),
+            sample_bits(3 * 63 * 5 - 6),
+            sample_bits(3 * 63 * 5 + 1 - 6),
         ]:
             all_bits = pers_bits + bits
             ph = pedersen_hash_to_point(b'Zcash_PH', all_bits)
@@ -133,6 +134,22 @@ def main():
                 "hash_x": int_to_hex(ph.u.s),
                 "hash_y": int_to_hex(ph.v.s),
             })
+
+    # Edge-cases
+    for (pers_name, pers_bits, bits) in [
+        ("MerkleTree(27)",  [1, 1, 0, 1, 1, 0], [1, 1, 0] * 61), # 63 chunks with c=0
+        ("MerkleTree(36)",  [0, 0, 1, 0, 0, 1], [0, 0, 1] * 61), # 63 chunks with c=1
+        ("MerkleTree(0)",   [0, 0, 0, 0, 0, 0], [0, 0, 0] * 61), # 63 chunks all 0
+        ("NoteCommitment",  [1, 1, 1, 1, 1, 1], [1, 1, 1] * 61), # 63 chunks all 1
+    ]:
+        all_bits = pers_bits + bits
+        ph = pedersen_hash_to_point(b'Zcash_PH', all_bits)
+        vectors.append({
+            "personalization": pers_name,
+            "input_bits": all_bits,
+            "hash_x": int_to_hex(ph.u.s),
+            "hash_y": int_to_hex(ph.v.s),
+        })
 
     rust = Template(template).render(vectors=vectors)
 
