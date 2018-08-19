@@ -98,23 +98,32 @@ def int_to_hex(i):
 def main():
     from jinja2 import Template
 
+    import random
+    rd = random.Random("Pedersen hash test vectors")
+
+    def sample_bits(k):
+        x = rd.getrandbits(k)
+        return [(x >> i) & 1 for i in range(k)]
+
     vectors = []
 
     for (pers_name, pers_bits) in [
         ("NoteCommitment", [1, 1, 1, 1, 1, 1]),
+        ("MerkleTree(0)",  [0, 0, 0, 0, 0, 0]),
         ("MerkleTree(34)", [0, 1, 0, 0, 0, 1]), # 34 in left-to-right binary
     ]:
         for bits in [
             [],
             [0],
             [1],
-            [0, 0],
-            [0, 1],
-            [1, 0],
-            [1, 1],
-            [0] * 14,
-            [1] * 14,
-            test_bits(),
+            [1, 0, 0], # Same hash due to 3-bits padding
+            sample_bits(3 * 62),
+            sample_bits(3 * 63),
+            sample_bits(3 * 63 + 1),
+            sample_bits(3 * 63 * 4),
+            sample_bits(3 * 63 * 4 + 1),
+            sample_bits(3 * 63 * 5),
+            sample_bits(3 * 63 * 5 + 1),
         ]:
             all_bits = pers_bits + bits
             ph = pedersen_hash_to_point(b'Zcash_PH', all_bits)
