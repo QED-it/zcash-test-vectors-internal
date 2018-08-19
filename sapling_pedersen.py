@@ -59,15 +59,6 @@ def windowed_pedersen_commitment(r, s):
 def homomorphic_pedersen_commitment(rcv, D, v):
     return find_group_hash(D, b'v') * v + find_group_hash(D, b'r') * rcv
 
-def test_bits():
-    chars = b"Salut monde!";
-    num_bits = len(chars) * 8;
-    bits = [
-        ((chars[i // 8] >> (7 - (i % 8))) & 1)
-        for i in range(num_bits)
-    ]
-    return bits
-
 
 template = '''
 /// Test vectors from https://github.com/zcash-hackworks/zcash-test-vectors/blob/master/sapling_pedersen.py
