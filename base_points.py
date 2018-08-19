@@ -1,3 +1,5 @@
+# Details of the Jujub group.
+
 from sapling_jubjub import *
 
 # This is the zero
@@ -40,10 +42,10 @@ C3 = Point(Fr(-51487464086487745867707624970564403863932192230710361188278096157
 assert C3 + C3 == B1
 assert C3 + C1 == A0
 
-cogroups = [ZERO, A0, B0, B1, C0, C1, C2, C3]
+small_order_points = [ZERO, A0, B0, B1, C0, C1, C2, C3]
 
 
-# A generator of the large subgroup without any component from the cogroups
+# A generator of the large subgroup without any component from the small subgroups
 G = Point(Fr(4139425550610461525665941076812662132363359224232624900223172373014329534291), Fr(39635691377166599497441725607757882405510648532010642268690928210480481875248))
 assert G * Fr(r_j) == ZERO
 
@@ -60,6 +62,8 @@ assert G_minus_minus * Fr(r_j) == A0
 
 
 # Some structure in Pedersen hashes: P and Pm differ only by the sign of u
+# This is ignoring the chunk preprocessing of PH, but there should be some pairs that do
+# have this property after preprocessing.
 P0 = G * Fs(r_j//2)
 P1 = G * Fs(r_j//2 + 1)
 assert Fr(P0.u.s) == Fr(-P1.u.s)
