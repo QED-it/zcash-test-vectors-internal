@@ -70,25 +70,25 @@ def test_bits():
 
 
 template = '''
-        // Test vectors from https://github.com/zcash-hackworks/zcash-test-vectors/blob/master/sapling_pedersen.py
-        struct TestVector<'a> {
-            personalization: Personalization,
-            input_bits: Vec<u8>,
-            hash_x: &'a str,
-            hash_y: &'a str,
-        }
+/// Test vectors from https://github.com/zcash-hackworks/zcash-test-vectors/blob/master/sapling_pedersen.py
 
-        let test_vectors = vec![
-        {% for v in vectors %}
-            TestVector {
-                personalization: Personalization::{{ v.personalization }},
-                input_bits: vec!{{ v.input_bits }},
-                hash_x: "Fs({{ v.hash_x }})",
-                hash_y: "Fs({{ v.hash_y }})",
-            },
-        {% endfor %}
-        ];
-        // End test vectors
+use pedersen_hash::Personalization;
+use pedersen_hash::test::TestVector;
+
+
+pub fn get_vectors<'a>() -> Vec<TestVector<'a>> {
+    return vec![
+{% for v in vectors %}
+        TestVector {
+            personalization: Personalization::{{ v.personalization }},
+            input_bits: vec!{{ v.input_bits }},
+            hash_x: "Fr({{ v.hash_x }})",
+            hash_y: "Fr({{ v.hash_y }})",
+        },
+{% endfor %}
+    ];
+}
+
 '''
 
 def int_to_hex(i):
@@ -126,7 +126,12 @@ def main():
             })
 
     rust = Template(template).render(vectors=vectors)
-    print(rust)
+
+    out_path = "pedersen_hash_vectors.rs"
+    with open(out_path, "w") as fd:
+        fd.write(rust)
+    print("Test vectors save to", out_path)
+    print("Move it to sapling-crypto/src/tests")
 
 
 if __name__ == '__main__':
